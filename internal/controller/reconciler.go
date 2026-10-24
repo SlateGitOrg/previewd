@@ -15,6 +15,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -166,11 +167,15 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	}
 
 	r.updateStatus(&pe, d, obs, extra)
-	if err := r.Client.Status().Patch(ctx, &pe, client.MergeFrom(original)); err != nil {
-		if apierrors.IsNotFound(err) {
-			return reconcile.Result{}, nil
+	// A converged environment produces an identical status; skipping the
+	// empty patch makes a quiet reconcile cost reads only.
+	if !equality.Semantic.DeepEqual(original.Status, pe.Status) {
+		if err := r.Client.Status().Patch(ctx, &pe, client.MergeFrom(original)); err != nil {
+			if apierrors.IsNotFound(err) {
+				return reconcile.Result{}, nil
+			}
+			return reconcile.Result{}, fmt.Errorf("update status: %w", err)
 		}
-		return reconcile.Result{}, fmt.Errorf("update status: %w", err)
 	}
 	r.recordTransition(&pe, original.Status.Phase, d)
 
