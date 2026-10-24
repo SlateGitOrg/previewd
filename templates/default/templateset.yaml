@@ -1,0 +1,28 @@
+# Default template set: one web workload per pull request.
+namespacePrefix: pr
+ttl: 72h
+host: "{{ .Namespace }}.preview.example.test"
+urlScheme: https
+podSecurity: baseline
+quota:
+  requests.cpu: "2"
+  requests.memory: 4Gi
+  limits.cpu: "4"
+  limits.memory: 8Gi
+  pods: "20"
+  services: "10"
+  persistentvolumeclaims: "2"
+limitRange:
+  default:
+    cpu: 500m
+    memory: 512Mi
+  defaultRequest:
+    cpu: 100m
+    memory: 128Mi
+networkPolicy:
+  ingressFromNamespaces: [ingress-nginx]
+  restrictEgress: true
+  egressCIDRs: ["10.20.0.0/16"]
+vars:
+  registry: registry.example.test/previews
+  port: "8080"

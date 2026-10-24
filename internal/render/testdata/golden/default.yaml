@@ -1,0 +1,254 @@
+# hash: d8e04e0f4790d9f3
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+    previewd.dev/owner: acme-shop-pr-42
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: baseline
+    previewd.dev/expires-at: "1791115200"
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: pr-shop-42
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-quota
+  namespace: pr-shop-42
+spec:
+  hard:
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    persistentvolumeclaims: "2"
+    pods: "20"
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    services: "10"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-limits
+  namespace: pr-shop-42
+spec:
+  limits:
+  - default:
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest:
+      cpu: 100m
+      memory: 128Mi
+    type: Container
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-default-deny
+  namespace: pr-shop-42
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-allow-same-namespace
+  namespace: pr-shop-42
+spec:
+  ingress:
+  - from:
+    - podSelector: {}
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-allow-ingress-namespaces
+  namespace: pr-shop-42
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - ingress-nginx
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-allow-egress
+  namespace: pr-shop-42
+spec:
+  egress:
+  - to:
+    - podSelector: {}
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - kube-system
+  - to:
+    - ipBlock:
+        cidr: 10.20.0.0/16
+  podSelector: {}
+  policyTypes:
+  - Egress
+---
+apiVersion: v1
+data:
+  EXPIRES_AT: "2026-10-04T12:00:00Z"
+  HEAD_REF: feature/Checkout-v2
+  HEAD_SHA: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  PR_NUMBER: "42"
+  PR_TITLE: 'Checkout v2: "one-click" flow'
+  PREVIEW_URL: https://pr-shop-42.preview.example.test
+kind: ConfigMap
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: preview-info
+  namespace: pr-shop-42
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: web
+  namespace: pr-shop-42
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app.kubernetes.io/name: web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    app.kubernetes.io/name: web
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: web
+  namespace: pr-shop-42
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: web
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: preview-info
+        image: registry.example.test/previews/shop:4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+        name: web
+        ports:
+        - containerPort: 8080
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: web
+  namespace: pr-shop-42
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: pr-shop-42.preview.example.test
+    http:
+      paths:
+      - backend:
+          service:
+            name: web
+            port:
+              name: http
+        path: /
+        pathType: Prefix

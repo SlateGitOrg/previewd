@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: site
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: site}
+  template:
+    metadata:
+      labels: {app: site}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: site
+          image: {{ quote .Vars.image }}
+          args: ["--bundle", {{ quote (printf "builds/%s.tar.gz" .PR.HeadSHA) }}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: site
+spec:
+  selector: {app: site}
+  ports: [{port: 80, targetPort: 8080}]
+{{- if has "preview:worker" .PR.Labels }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: worker}
+  template:
+    metadata:
+      labels: {app: worker}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: worker
+          image: {{ quote .Vars.image }}
+          args: ["--worker"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+{{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: site
+spec:
+  rules:
+    - host: {{ quote .Host }}
+      http:
+        paths:
+          - {path: /, pathType: Prefix, backend: {service: {name: site, port: {number: 80}}}}

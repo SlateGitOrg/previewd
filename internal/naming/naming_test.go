@@ -9,7 +9,7 @@ import (
 
 func TestSlug(t *testing.T) {
 	cases := map[string]string{
-		"Acme/Shop":            "acme-shop",
+		"Acme/Shop":           "acme-shop",
 		"feature/__Login--UI": "feature-login-ui",
 		"--x--":               "x",
 		"":                    "x",

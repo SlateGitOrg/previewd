@@ -1,0 +1,191 @@
+# hash: c6082d4cb592214c
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+    previewd.dev/owner: acme-shop-pr-42
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted
+    previewd.dev/expires-at: "1791115200"
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: site-shop-42
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-quota
+  namespace: site-shop-42
+spec:
+  hard:
+    pods: "4"
+    requests.cpu: 500m
+    requests.memory: 512Mi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-limits
+  namespace: site-shop-42
+spec:
+  limits:
+  - default:
+      cpu: 200m
+      memory: 128Mi
+    defaultRequest:
+      cpu: 50m
+      memory: 64Mi
+    type: Container
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-default-deny
+  namespace: site-shop-42
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-allow-same-namespace
+  namespace: site-shop-42
+spec:
+  ingress:
+  - from:
+    - podSelector: {}
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: previewd-allow-ingress-namespaces
+  namespace: site-shop-42
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - ingress-nginx
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: site
+  namespace: site-shop-42
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: site
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: site
+  namespace: site-shop-42
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: site
+  template:
+    metadata:
+      labels:
+        app: site
+    spec:
+      containers:
+      - args:
+        - --bundle
+        - builds/4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c.tar.gz
+        image: registry.example.test/static-server:1.4.2
+        name: site
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    previewd.dev/head-sha: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+  labels:
+    app.kubernetes.io/managed-by: previewd
+    previewd.dev/instance: acme-shop-pr-42
+    previewd.dev/pr: "42"
+    previewd.dev/repo: acme.shop
+  name: site
+  namespace: site-shop-42
+spec:
+  rules:
+  - host: pr-42-shop.sites.example.test
+    http:
+      paths:
+      - backend:
+          service:
+            name: site
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

@@ -1,0 +1,21 @@
+# Minimal template set for static front-ends: short TTL, tight quota,
+# label-driven optional worker.
+namespacePrefix: site
+ttl: 24h
+host: "pr-{{ .PR.Number }}-{{ .Repo.Slug }}.sites.example.test"
+podSecurity: restricted
+quota:
+  pods: "4"
+  requests.cpu: "500m"
+  requests.memory: 512Mi
+limitRange:
+  default: {cpu: 200m, memory: 128Mi}
+  defaultRequest: {cpu: 50m, memory: 64Mi}
+networkPolicy:
+  ingressFromNamespaces: [ingress-nginx]
+allowedKinds:
+  - apps/v1/Deployment
+  - v1/Service
+  - networking.k8s.io/v1/Ingress
+vars:
+  image: registry.example.test/static-server:1.4.2

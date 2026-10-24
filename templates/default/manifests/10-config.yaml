@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: preview-info
+data:
+  PREVIEW_URL: {{ quote .URL }}
+  PR_NUMBER: {{ quote .PR.Number }}
+  PR_TITLE: {{ quote .PR.Title }}
+  HEAD_REF: {{ quote .PR.HeadRef }}
+  HEAD_SHA: {{ quote .PR.HeadSHA }}
+  EXPIRES_AT: {{ quote .ExpiresAt }}
