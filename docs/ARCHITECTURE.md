@@ -226,10 +226,13 @@ everything and flip the commit status back to `pending`
    retries.
 
 The handler never touches namespaces or the SCM; it only records desired
-state. That keeps webhook latency low (p50 44 ms in the scale run below) and
+state. That keeps webhook latency low (p50 34 ms in the README's 50-PR scale run) and
 makes every side effect retryable by the reconciler.
 
 ## Complexity
+
+Timings are single runs on the build machine (Apple silicon, 8 cores, shared
+with other jobs); expect run-to-run variance of tens of percent.
 
 Let *k* be the number of objects in a bundle, *K* the number of kinds the
 catalog allows, *b* the payload size and *P* the number of preview
@@ -237,10 +240,10 @@ environments.
 
 | Operation | Time | Space | Notes |
 |---|---|---|---|
-| `lifecycle.Decide` | O(1) | O(1) | 39 ns/op (`make bench`) |
-| signature verify | O(b · secrets) | O(1) | 12.3 µs for 25 KiB (`make bench`) |
-| payload parse | O(b) | O(b) | 5.5 µs for the fixture |
-| render + validate + hash | O(k log k + template size) | O(k) | 201 µs, 2,114 allocs for the default set |
+| `lifecycle.Decide` | O(1) | O(1) | 38 ns/op (`make bench`) |
+| signature verify | O(b · secrets) | O(1) | 11.1 µs for 25 KiB (`make bench`) |
+| payload parse | O(b) | O(b) | 5.2 µs for the fixture |
+| render + validate + hash | O(k log k + template size) | O(k) | 192 µs, 2,088 allocs for the default set |
 | reconcile (apply) | O(k) API calls + O(K) list calls | O(k) | one SSA per object, one LIST per allowed kind |
 | reconcile (converged) | 2 GETs + readiness GETs from cache | O(k) | no writes |
 | orphan sweep | O(namespaces + P) | O(P) | leader only, every 5 min |

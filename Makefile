@@ -12,7 +12,7 @@ COVER_DIR   := coverage
 # Resolve envtest binaries: installed copy first (offline), download otherwise.
 ENVTEST_ASSETS = $$($(GO) tool setup-envtest use $(ENVTEST_K8S_VERSION) -i -p path 2>/dev/null || $(GO) tool setup-envtest use $(ENVTEST_K8S_VERSION) -p path)
 
-.PHONY: all check fmt fmt-check lint vet generate verify-generate test unit cover fuzz demo bench bench-scale build envtest clean help
+.PHONY: all check fmt fmt-check lint vet generate verify-generate test unit cover cover-report fuzz demo bench bench-scale build envtest clean help
 
 all: check
 
@@ -58,6 +58,13 @@ cover: ## enforce the coverage floor on ./internal/... (core logic)
 	@total=$$($(GO) tool cover -func=$(COVER_DIR)/cover.out | awk '/^total:/ {sub("%","",$$3); print $$3}'); \
 	 echo "coverage (./internal/...): $$total% (minimum $(COVERAGE_MIN)%)"; \
 	 awk -v t="$$total" -v m="$(COVERAGE_MIN)" 'BEGIN { exit !(t >= m) }'
+
+cover-report: ## per-package statement coverage from the last `make test`
+	@awk 'NR > 1 { split($$1, a, ":"); f = a[1]; sub(/\/[^\/]+$$/, "", f); key = $$1; \
+	   stmts[key] = $$2; pkg[key] = f; if ($$3 > 0) hit[key] = 1 } \
+	 END { for (k in stmts) { t[pkg[k]] += stmts[k]; if (k in hit) c[pkg[k]] += stmts[k] } \
+	   for (p in t) printf "%-55s %6.1f%%  (%d/%d statements)\n", p, 100 * c[p] / t[p], c[p], t[p] }' \
+	 $(COVER_DIR)/cover.out | sort
 
 fuzz: ## short fuzzing sessions for the parsers
 	$(GO) test ./internal/naming -run '^$$' -fuzz FuzzNamespaceIsAlwaysValid -fuzztime 30s
