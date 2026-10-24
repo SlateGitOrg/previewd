@@ -1,0 +1,54 @@
+version: "2"
+run:
+  timeout: 5m
+  tests: true
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - errcheck
+    - errorlint
+    - gocritic
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - nolintlint
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+  settings:
+    gosec:
+      excludes:
+        # G304: file paths come from operator flags, by design.
+        - G304
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: indent-error-flow
+        - name: errorf
+        - name: blank-imports
+        - name: context-as-argument
+        - name: error-return
+        - name: error-strings
+        - name: receiver-naming
+        - name: increment-decrement
+        - name: unused-parameter
+          disabled: true
+  exclusions:
+    generated: strict
+    rules:
+      - path: _test\.go
+        linters: [gosec, unparam, errcheck]
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/archit2501/previewd

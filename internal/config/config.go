@@ -20,8 +20,8 @@ import (
 // environment or files, never from flags, so they do not show up in
 // process listings.
 const (
-	EnvWebhookSecrets = "PREVIEWD_WEBHOOK_SECRETS" // comma-separated
-	EnvGitHubToken    = "GITHUB_TOKEN"
+	EnvWebhookSecrets = "PREVIEWD_WEBHOOK_SECRETS" //nolint:gosec // variable name, not a credential
+	EnvGitHubToken    = "GITHUB_TOKEN"             //nolint:gosec // variable name, not a credential
 )
 
 // Config is the full runtime configuration of `previewd serve`.

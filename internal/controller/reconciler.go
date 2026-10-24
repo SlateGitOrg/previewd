@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -123,7 +124,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		} else {
 			status.AppliedHash = extra.bundle.Hash
 			status.AppliedSHA = pe.Spec.PullRequest.HeadSHA
-			status.Resources = int32(len(extra.bundle.Objects) + 1)
+			status.Resources = clampInt32(len(extra.bundle.Objects) + 1)
 		}
 	}
 	if d.DeleteNamespace && !extra.foreignNS {
@@ -505,9 +506,13 @@ func (r *Reconciler) recordTransition(pe *v1alpha1.PreviewEnvironment, from v1al
 	if from == d.Phase {
 		return
 	}
-	metrics.PhaseTransitions.WithLabelValues(string(from), string(d.Phase)).Inc()
+	metrics.PhaseTransitions.WithLabelValues(phaseOrNone(from), string(d.Phase)).Inc()
 	if d.Phase == v1alpha1.PhaseReady {
-		metrics.TimeToReady.Observe(r.Clock.Since(pe.Spec.LastActivityTime.Time).Seconds())
+		// Skip negative samples caused by clock skew between the SCM and
+		// the cluster rather than corrupting the histogram.
+		if since := r.Clock.Since(pe.Spec.LastActivityTime.Time); since >= 0 {
+			metrics.TimeToReady.Observe(since.Seconds())
+		}
 	}
 	eventType := corev1.EventTypeNormal
 	if d.Phase == v1alpha1.PhaseFailed {
@@ -533,3 +538,14 @@ func minDuration(a, b time.Duration) time.Duration {
 }
 
 func ptr[T any](v T) *T { return &v }
+
+func clampInt32(n int) int32 {
+	switch {
+	case n > math.MaxInt32:
+		return math.MaxInt32
+	case n < 0:
+		return 0
+	default:
+		return int32(n)
+	}
+}

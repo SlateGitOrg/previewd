@@ -46,7 +46,7 @@ func (t *TemplateSet) validateObject(o *unstructured.Unstructured, namespace str
 			st = "ClusterIP"
 		}
 		if !t.serviceTypes[st] {
-			return fmt.Errorf("Service %q uses type %s, which is not allowed", name, st)
+			return fmt.Errorf("service %q uses type %s, which is not allowed", name, st)
 		}
 	}
 	if spec, ok := podSpec(o); ok {

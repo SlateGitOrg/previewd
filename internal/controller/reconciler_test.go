@@ -506,6 +506,9 @@ func TestReadinessHelpers(t *testing.T) {
 	if minDuration(0, time.Second) != time.Second || minDuration(3*time.Second, time.Second) != time.Second || minDuration(time.Second, 3*time.Second) != time.Second {
 		t.Fatal("minDuration")
 	}
+	if clampInt32(-1) != 0 || clampInt32(1<<40) != 1<<31-1 || clampInt32(7) != 7 {
+		t.Fatal("clampInt32")
+	}
 	if phaseOrNone("") != "<none>" {
 		t.Fatal("phaseOrNone")
 	}

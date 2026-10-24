@@ -200,8 +200,7 @@ func TestDeletingPreviewIsRetryable(t *testing.T) {
 func TestCreateRaceRetriesAsUpdate(t *testing.T) {
 	sch := scheme(t)
 	created := false
-	var c client.Client
-	c = fake.NewClientBuilder().WithScheme(sch).WithInterceptorFuncs(interceptor.Funcs{
+	c := fake.NewClientBuilder().WithScheme(sch).WithInterceptorFuncs(interceptor.Funcs{
 		Create: func(ctx context.Context, cl client.WithWatch, obj client.Object, opts ...client.CreateOption) error {
 			if !created {
 				// Simulate another replica winning the race: the object

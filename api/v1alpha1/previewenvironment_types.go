@@ -151,10 +151,6 @@ type PreviewEnvironmentList struct {
 	Items           []PreviewEnvironment `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&PreviewEnvironment{}, &PreviewEnvironmentList{})
-}
-
 // Condition types set on PreviewEnvironment.
 const (
 	// ConditionRendered reports whether the template rendered and validated.
