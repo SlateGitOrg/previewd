@@ -17,12 +17,16 @@ import (
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	clocktesting "k8s.io/utils/clock/testing"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/yaml"
 
 	"github.com/archit2501/previewd/api/v1alpha1"
 	"github.com/archit2501/previewd/internal/intake"
@@ -252,5 +256,54 @@ func TestReporterSelection(t *testing.T) {
 	rec := &scm.Recorder{}
 	if selectReporter(cfg, Overrides{Reporter: rec}, logr.Discard()) != rec {
 		t.Fatal("override ignored")
+	}
+}
+
+// TestDeployManifestsAreValid server-side dry-runs the shipped deployment
+// manifests and the sample against the envtest API server, so schema errors
+// in config/ fail the build even though no real cluster is involved.
+func TestDeployManifestsAreValid(t *testing.T) {
+	if testCfg == nil {
+		t.Skip(envtestErr)
+	}
+	s, err := Scheme()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := client.New(testCfg, client.Options{Scheme: s})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "previewd-system"}}
+	if err := c.Create(ctx, ns); err != nil && !apierrors.IsAlreadyExists(err) {
+		t.Fatal(err)
+	}
+	files := []string{"rbac/role.yaml", "manager/manager.yaml", "samples/previewenvironment.yaml"}
+	count := 0
+	for _, f := range files {
+		raw, err := os.ReadFile(filepath.Join("..", "..", "config", f))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, doc := range strings.Split(string(raw), "\n---\n") {
+			var obj unstructured.Unstructured
+			if err := yaml.Unmarshal([]byte(doc), &obj.Object); err != nil {
+				t.Fatalf("%s: %v", f, err)
+			}
+			if len(obj.Object) == 0 {
+				continue
+			}
+			if obj.GetKind() == "Namespace" {
+				continue // created above
+			}
+			if err := c.Create(ctx, &obj, client.DryRunAll); err != nil {
+				t.Errorf("%s: %s %s rejected: %v", f, obj.GetKind(), obj.GetName(), err)
+			}
+			count++
+		}
+	}
+	if count < 7 {
+		t.Fatalf("validated only %d objects", count)
 	}
 }

@@ -1,0 +1,22 @@
+# A PreviewEnvironment is normally created by the webhook intake, but it can
+# be applied by hand (e.g. to preview a branch without a PR event).
+apiVersion: previewd.dev/v1alpha1
+kind: PreviewEnvironment
+metadata:
+  name: acme-shop-pr-42
+spec:
+  repository:
+    owner: acme
+    name: shop
+  pullRequest:
+    number: 42
+    headSHA: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
+    headRef: feature/checkout-v2
+    baseRef: main
+    author: octocat
+    title: "Checkout v2: one-click flow"
+    labels: [preview]
+  state: open
+  template: default
+  ttl: 24h
+  lastActivityTime: "2026-10-01T09:00:00Z"

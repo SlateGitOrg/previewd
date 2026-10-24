@@ -76,6 +76,21 @@ type observed struct {
 	foreignNS bool
 }
 
+// RBAC for the controller. Namespaces are created dynamically, so the
+// namespaced kinds a template set may contain need cluster-wide verbs; see
+// docs/THREAT_MODEL.md for the consequences and mitigations.
+//
+// +kubebuilder:rbac:groups=previewd.dev,resources=previewenvironments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=previewd.dev,resources=previewenvironments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=previewd.dev,resources=previewenvironments/finalizers,verbs=update
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=resourcequotas;limitranges;configmaps;secrets;services;serviceaccounts;persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies;ingresses,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;watch;create;update;patch;delete
+
 // Reconcile implements reconcile.Reconciler.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	logger := log.FromContext(ctx)

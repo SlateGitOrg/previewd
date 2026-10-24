@@ -34,12 +34,13 @@ vet: ## type-check and vet every package
 lint: ## golangci-lint (zero findings)
 	golangci-lint run ./...
 
-generate: ## regenerate deepcopy code and the CRD manifest
+generate: ## regenerate deepcopy code, the CRD and the controller ClusterRole
 	$(GO) tool controller-gen object paths=./api/...
 	$(GO) tool controller-gen crd paths=./api/... output:crd:artifacts:config=config/crd
+	$(GO) tool controller-gen rbac:roleName=previewd paths=./internal/controller/... output:rbac:artifacts:config=config/rbac
 
 verify-generate: generate ## fail if generated files differ from what is committed
-	@git diff --exit-code --stat -- api config/crd || { echo "generated files are stale: commit the output of 'make generate'"; exit 1; }
+	@git diff --exit-code --stat -- api config/crd config/rbac || { echo "generated files are stale: commit the output of 'make generate'"; exit 1; }
 	@echo "verify-generate: ok"
 
 envtest: ## print the envtest asset directory (downloads once if missing)
