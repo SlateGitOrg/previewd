@@ -1,0 +1,40 @@
+# Runs the same gates as `make check`. Not yet executed: the repository has
+# not been pushed anywhere.
+name: CI
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.13.2
+          install-only: true
+      - name: Cache envtest binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/kubebuilder-envtest
+          key: envtest-1.37.0-${{ runner.os }}
+      - name: make check (fmt, generated code, vet, lint, tests incl. envtest, coverage)
+        run: make check
+      - name: Offline end-to-end demo
+        run: make demo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/cover.out
