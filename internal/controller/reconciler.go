@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -74,6 +75,8 @@ type observed struct {
 	namespace string
 	expiresAt time.Time
 	foreignNS bool
+	// expiryLabel is the namespace's current expiry label value.
+	expiryLabel string
 }
 
 // RBAC for the controller. Namespaces are created dynamically, so the
@@ -140,6 +143,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			status.AppliedHash = extra.bundle.Hash
 			status.AppliedSHA = pe.Spec.PullRequest.HeadSHA
 			status.Resources = clampInt32(len(extra.bundle.Objects) + 1)
+		}
+	}
+	if (d.Phase == v1alpha1.PhaseProvisioning || d.Phase == v1alpha1.PhaseReady) &&
+		(obs.Namespace == lifecycle.NamespaceActive || d.Apply) {
+		if err := r.ensureExpiryLabel(ctx, extra.namespace, extra.expiresAt, extra.expiryLabel); err != nil {
+			return reconcile.Result{}, err
 		}
 	}
 	if d.DeleteNamespace && !extra.foreignNS {
@@ -226,7 +235,7 @@ func (r *Reconciler) observe(ctx context.Context, pe *v1alpha1.PreviewEnvironmen
 	case !ok:
 		obs.RenderError = fmt.Sprintf("template set %q not found (available: %s)", pe.Spec.Template, strings.Join(r.Catalog.Names(), ", "))
 	case obs.Wanted && !obs.Deleting && !obs.Expired():
-		b, err := ts.Render(render.InputFrom(pe, extra.expiresAt))
+		b, err := ts.Render(render.InputFrom(pe))
 		if err != nil {
 			obs.RenderError = err.Error()
 		} else {
@@ -235,10 +244,11 @@ func (r *Reconciler) observe(ctx context.Context, pe *v1alpha1.PreviewEnvironmen
 		}
 	}
 
-	nsState, foreign, err := r.namespaceState(ctx, extra.namespace, pe.Name)
+	nsState, foreign, expiryLabel, err := r.namespaceState(ctx, extra.namespace, pe.Name)
 	if err != nil {
 		return obs, extra, err
 	}
+	extra.expiryLabel = expiryLabel
 	obs.Namespace = nsState
 	extra.foreignNS = foreign
 	if foreign {
@@ -288,24 +298,45 @@ func (r *Reconciler) wanted(pe *v1alpha1.PreviewEnvironment) (bool, string) {
 
 // namespaceState reads the namespace straight from the API server. foreign
 // is true when it exists but belongs to something other than instance.
-func (r *Reconciler) namespaceState(ctx context.Context, name, instance string) (lifecycle.NamespaceState, bool, error) {
+// The returned label is the namespace's current expiry label.
+func (r *Reconciler) namespaceState(ctx context.Context, name, instance string) (lifecycle.NamespaceState, bool, string, error) {
 	if name == "" {
-		return lifecycle.NamespaceAbsent, false, nil
+		return lifecycle.NamespaceAbsent, false, "", nil
 	}
 	var ns corev1.Namespace
 	if err := r.APIReader.Get(ctx, types.NamespacedName{Name: name}, &ns); err != nil {
 		if apierrors.IsNotFound(err) {
-			return lifecycle.NamespaceAbsent, false, nil
+			return lifecycle.NamespaceAbsent, false, "", nil
 		}
-		return lifecycle.NamespaceAbsent, false, fmt.Errorf("get namespace %s: %w", name, err)
+		return lifecycle.NamespaceAbsent, false, "", fmt.Errorf("get namespace %s: %w", name, err)
 	}
 	if ns.Labels[v1alpha1.LabelManagedBy] != v1alpha1.ManagedByValue || ns.Labels[v1alpha1.LabelInstance] != instance {
-		return lifecycle.NamespaceActive, true, nil
+		return lifecycle.NamespaceActive, true, "", nil
 	}
 	if !ns.DeletionTimestamp.IsZero() {
-		return lifecycle.NamespaceTerminating, false, nil
+		return lifecycle.NamespaceTerminating, false, "", nil
 	}
-	return lifecycle.NamespaceActive, false, nil
+	return lifecycle.NamespaceActive, false, ns.Labels[v1alpha1.LabelExpiresAt], nil
+}
+
+// ensureExpiryLabel keeps the namespace's expiry label (unix seconds) in
+// step with the TTL. It is applied by its own field manager, outside the
+// bundle, so a TTL bump never re-applies the environment or flips the SCM
+// status back to pending.
+func (r *Reconciler) ensureExpiryLabel(ctx context.Context, namespace string, expiresAt time.Time, current string) error {
+	want := strconv.FormatInt(expiresAt.Unix(), 10)
+	if current == want {
+		return nil
+	}
+	ns := &unstructured.Unstructured{}
+	ns.SetAPIVersion("v1")
+	ns.SetKind("Namespace")
+	ns.SetName(namespace)
+	ns.SetLabels(map[string]string{v1alpha1.LabelExpiresAt: want})
+	if err := r.Client.Apply(ctx, client.ApplyConfigurationFromUnstructured(ns), client.FieldOwner(FieldOwner+"-ttl"), client.ForceOwnership); err != nil {
+		return fmt.Errorf("label namespace %s with expiry: %w", namespace, err)
+	}
+	return nil
 }
 
 // workloadsReady reports whether every Deployment and StatefulSet in the

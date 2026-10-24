@@ -1,4 +1,4 @@
-# hash: c6082d4cb592214c
+# hash: 77b4e34796ac3152
 ---
 apiVersion: v1
 kind: Namespace
@@ -10,7 +10,6 @@ metadata:
     app.kubernetes.io/managed-by: previewd
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/warn: restricted
-    previewd.dev/expires-at: "1791115200"
     previewd.dev/instance: acme-shop-pr-42
     previewd.dev/pr: "42"
     previewd.dev/repo: acme.shop

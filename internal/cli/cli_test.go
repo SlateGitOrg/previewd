@@ -27,7 +27,7 @@ var templates = filepath.Join("..", "..", "templates")
 func TestRender(t *testing.T) {
 	code, out, errOut := run(t, "", nil, "render", "--templates-dir", templates, "--repo", "acme/shop",
 		"--pr", "42", "--sha", "4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c", "--title", "hi",
-		"--expires-at", "2026-10-04T09:00:00Z", "--label", "preview")
+		"--label", "preview")
 	if code != 0 {
 		t.Fatalf("code %d: %s", code, errOut)
 	}
@@ -37,7 +37,6 @@ func TestRender(t *testing.T) {
 	if n := strings.Count(out, "\n---\n"); n != 11 {
 		t.Fatalf("documents: %d", n)
 	}
-	// Default expiry (now + TTL) also renders.
 	if code, _, errOut := run(t, "", nil, "render", "--templates-dir", templates, "--template", "static-site",
 		"--repo", "acme/site", "--pr", "1", "--sha", "4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c"); code != 0 {
 		t.Fatalf("static-site: %s", errOut)
@@ -50,7 +49,6 @@ func TestRenderErrors(t *testing.T) {
 		"missing repo":     {"render", "--pr", "1", "--sha", sha},
 		"unknown template": {"render", "--templates-dir", templates, "--template", "nope", "--repo", "a/b", "--pr", "1", "--sha", sha},
 		"bad dir":          {"render", "--templates-dir", "nope", "--repo", "a/b", "--pr", "1", "--sha", sha},
-		"bad expiry":       {"render", "--templates-dir", templates, "--repo", "a/b", "--pr", "1", "--sha", sha, "--expires-at", "soon"},
 		"bad flag":         {"render", "--nope"},
 	}
 	for name, args := range cases {

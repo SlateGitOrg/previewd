@@ -31,7 +31,6 @@ func sampleInput() Input {
 			Title:   "Checkout v2: \"one-click\" flow",
 			Labels:  []string{"preview"},
 		},
-		ExpiresAt: time.Date(2026, 10, 4, 12, 0, 0, 0, time.UTC),
 	}
 }
 
@@ -130,7 +129,7 @@ func TestRenderDefaultShape(t *testing.T) {
 		t.Fatal("keys not unique")
 	}
 	ns := b.Namespace.GetLabels()
-	if ns[v1alpha1.LabelExpiresAt] != "1791115200" || ns["pod-security.kubernetes.io/enforce"] != "baseline" {
+	if _, has := ns[v1alpha1.LabelExpiresAt]; has || ns["pod-security.kubernetes.io/enforce"] != "baseline" {
 		t.Fatalf("namespace labels %v", ns)
 	}
 	port, found, _ := unstructured.NestedSlice(b.Objects[8].Object, "spec", "template", "spec", "containers")
@@ -441,9 +440,8 @@ func TestInputFrom(t *testing.T) {
 	pe.Name = "n"
 	pe.Spec.Repository = v1alpha1.RepositoryRef{Owner: "o", Name: "r"}
 	pe.Spec.PullRequest.Number = 3
-	at := time.Unix(100, 0)
-	in := InputFrom(pe, at)
-	if in.Instance != "n" || in.Repo.Name != "r" || in.PullRequest.Number != 3 || !in.ExpiresAt.Equal(at) {
+	in := InputFrom(pe)
+	if in.Instance != "n" || in.Repo.Name != "r" || in.PullRequest.Number != 3 {
 		t.Fatalf("%+v", in)
 	}
 }

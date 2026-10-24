@@ -3,13 +3,13 @@
 apiVersion: previewd.dev/v1alpha1
 kind: PreviewEnvironment
 metadata:
-  name: acme-shop-pr-42
+  name: acme-web-pr-7
 spec:
   repository:
     owner: acme
-    name: shop
+    name: web
   pullRequest:
-    number: 42
+    number: 7
     headSHA: 4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c
     headRef: feature/checkout-v2
     baseRef: main

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/archit2501/previewd/api/v1alpha1"
 	"github.com/archit2501/previewd/internal/naming"
@@ -17,18 +16,18 @@ type Input struct {
 	Instance    string
 	Repo        v1alpha1.RepositoryRef
 	PullRequest v1alpha1.PullRequestRef
-	// ExpiresAt is written as a label so humans and other tools can see the
-	// deadline without reading the PreviewEnvironment.
-	ExpiresAt time.Time
 }
 
 // InputFrom builds the render input for a PreviewEnvironment.
-func InputFrom(pe *v1alpha1.PreviewEnvironment, expiresAt time.Time) Input {
+//
+// The TTL deliberately is not an input: it moves on every PR event, and
+// rendering it would make every label or title edit re-apply the bundle.
+// The controller maintains the expiry label on the namespace separately.
+func InputFrom(pe *v1alpha1.PreviewEnvironment) Input {
 	return Input{
 		Instance:    pe.Name,
 		Repo:        pe.Spec.Repository,
 		PullRequest: pe.Spec.PullRequest,
-		ExpiresAt:   expiresAt,
 	}
 }
 
@@ -41,7 +40,6 @@ type Values struct {
 	Namespace string
 	Host      string
 	URL       string
-	ExpiresAt string
 	Repo      RepoValues
 	PR        PRValues
 	Vars      map[string]string
@@ -77,7 +75,6 @@ func (t *TemplateSet) values(in Input) (Values, error) {
 	v := Values{
 		Instance:  in.Instance,
 		Namespace: naming.Namespace(t.Config.NamespacePrefix, in.Repo.Name, in.PullRequest.Number),
-		ExpiresAt: in.ExpiresAt.UTC().Format(time.RFC3339),
 		Repo: RepoValues{
 			Owner:    in.Repo.Owner,
 			Name:     in.Repo.Name,

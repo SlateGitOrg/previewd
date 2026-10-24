@@ -10,7 +10,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -113,7 +112,6 @@ func renderCmd(args []string, stdio IO) error {
 	sha := fs.String("sha", "", "head commit SHA (required)")
 	branch := fs.String("branch", "", "head branch name")
 	title := fs.String("title", "", "pull request title")
-	expires := fs.String("expires-at", "", "expiry timestamp (RFC 3339); default now + template TTL")
 	var labels stringList
 	fs.Var(&labels, "label", "pull request label (repeatable)")
 	if err := fs.Parse(args); err != nil {
@@ -131,25 +129,18 @@ func renderCmd(args []string, stdio IO) error {
 	if !found {
 		return fmt.Errorf("template set %q not found (have %v)", *tpl, catalog.Names())
 	}
-	at := time.Now().Add(ts.TTL()).UTC().Truncate(time.Second)
-	if *expires != "" {
-		if at, err = time.Parse(time.RFC3339, *expires); err != nil {
-			return fmt.Errorf("--expires-at: %w", err)
-		}
-	}
 	b, err := ts.Render(render.Input{
 		Instance: naming.Instance(owner, name, *number),
 		Repo:     v1alpha1.RepositoryRef{Owner: owner, Name: name},
 		PullRequest: v1alpha1.PullRequestRef{
 			Number: *number, HeadSHA: *sha, HeadRef: *branch, Title: *title, Labels: labels,
 		},
-		ExpiresAt: at,
 	})
 	if err != nil {
 		return err
 	}
-	_, _ = fmt.Fprintf(stdio.Stdout, "# previewd render: template=%s namespace=%s objects=%d hash=%s url=%s\n",
-		ts.Name, b.Namespace.GetName(), len(b.Objects)+1, b.Hash, b.Values.URL)
+	_, _ = fmt.Fprintf(stdio.Stdout, "# previewd render: template=%s namespace=%s objects=%d hash=%s url=%s ttl=%s\n",
+		ts.Name, b.Namespace.GetName(), len(b.Objects)+1, b.Hash, b.Values.URL, ts.TTL())
 	for _, o := range append([]*unstructured.Unstructured{b.Namespace}, b.Objects...) {
 		y, err := yaml.Marshal(o.Object)
 		if err != nil {

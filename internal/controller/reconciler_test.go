@@ -519,3 +519,61 @@ func TestReadinessHelpers(t *testing.T) {
 		t.Fatal(ManagedSelector().String())
 	}
 }
+
+// TestActivityExtendsTTLWithoutReapply: PR activity that does not change
+// what is rendered (here: a newer updated_at, as an "edited" or review event
+// produces) moves the expiry label and status.expiresAt, but does not
+// re-apply the bundle or post another status.
+func TestActivityExtendsTTLWithoutReapply(t *testing.T) {
+	h := newHarness(t, repoCatalog(t), Options{})
+	pe := h.newPE("bump", 113, "default")
+	h.mustReconcile(pe.Name)
+	h.markAvailable("pr-bump-113", "web")
+	h.mustReconcile(pe.Name)
+	ns, _ := h.namespace("pr-bump-113")
+	if ns.Labels[v1alpha1.LabelExpiresAt] != "1791104400" { // 2026-10-04T09:00:00Z
+		t.Fatalf("expiry label %q", ns.Labels[v1alpha1.LabelExpiresAt])
+	}
+	hash := h.get(pe.Name).Status.AppliedHash
+	reports := len(h.reports())
+	var cm corev1.ConfigMap
+	if err := testClient.Get(h.ctx, types.NamespacedName{Namespace: "pr-bump-113", Name: "preview-info"}, &cm); err != nil {
+		t.Fatal(err)
+	}
+
+	got := h.get(pe.Name)
+	got.Spec.LastActivityTime = metav1.NewTime(epoch.Add(5 * time.Hour))
+	if err := testClient.Update(h.ctx, got); err != nil {
+		t.Fatal(err)
+	}
+	h.mustReconcile(pe.Name)
+	got = h.get(pe.Name)
+	if got.Status.AppliedHash != hash || got.Status.Phase != v1alpha1.PhaseReady || len(h.reports()) != reports {
+		t.Fatalf("activity re-applied or re-reported: phase=%s reports=%v", got.Status.Phase, h.reports())
+	}
+	if !got.Status.ExpiresAt.Time.Equal(epoch.Add(77 * time.Hour)) {
+		t.Fatalf("expiresAt %v", got.Status.ExpiresAt)
+	}
+	ns, _ = h.namespace("pr-bump-113")
+	if ns.Labels[v1alpha1.LabelExpiresAt] != "1791122400" { // +5h
+		t.Fatalf("expiry label %q", ns.Labels[v1alpha1.LabelExpiresAt])
+	}
+	var cm2 corev1.ConfigMap
+	if err := testClient.Get(h.ctx, types.NamespacedName{Namespace: "pr-bump-113", Name: "preview-info"}, &cm2); err != nil {
+		t.Fatal(err)
+	}
+	if cm2.ResourceVersion != cm.ResourceVersion {
+		t.Fatal("ConfigMap rewritten by a TTL-only change")
+	}
+	// The bundle's own apply must not strip the label owned by the TTL
+	// field manager.
+	got.Spec.PullRequest.HeadSHA = shaB
+	if err := testClient.Update(h.ctx, got); err != nil {
+		t.Fatal(err)
+	}
+	h.mustReconcile(pe.Name)
+	ns, _ = h.namespace("pr-bump-113")
+	if ns.Labels[v1alpha1.LabelExpiresAt] != "1791122400" {
+		t.Fatalf("expiry label lost on re-apply: %v", ns.Labels)
+	}
+}

@@ -8,4 +8,3 @@ data:
   PR_TITLE: {{ quote .PR.Title }}
   HEAD_REF: {{ quote .PR.HeadRef }}
   HEAD_SHA: {{ quote .PR.HeadSHA }}
-  EXPIRES_AT: {{ quote .ExpiresAt }}

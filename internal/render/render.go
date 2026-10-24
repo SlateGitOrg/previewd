@@ -133,9 +133,6 @@ func (t *TemplateSet) namespaceObject(v Values, in Input, common map[string]stri
 	for k, val := range common {
 		labels[k] = val
 	}
-	if !in.ExpiresAt.IsZero() {
-		labels[v1alpha1.LabelExpiresAt] = strconv.FormatInt(in.ExpiresAt.Unix(), 10)
-	}
 	ns := &unstructured.Unstructured{}
 	ns.SetAPIVersion("v1")
 	ns.SetKind("Namespace")
