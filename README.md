@@ -216,9 +216,9 @@ machine (Apple silicon, 8 cores, shared with other builds — expect variance).
 | What | Command | Result |
 |---|---|---|
 | All gates | `make check` | pass: fmt, generate check, vet, golangci-lint (0 issues), 12 test packages, coverage floor |
-| Coverage, `./internal/...` | `make check` (then `make cover-report`) | **94.9%** of statements (1405/1481) in the fresh-clone run; ±0.1 between runs because a few paths are timing-dependent |
+| Coverage, `./internal/...` | `make check` (then `make cover-report`) | **94.9%** of statements (1412/1491) in the fresh-clone run (fix round 1); ±0.1 between runs because a few paths are timing-dependent |
 | Lowest packages | `make cover-report` | app 81.8%, cli 84.7%, controller 88.7% |
-| Envtest integration tests | `go test ./internal/controller ./internal/app` (via `make test`) | 15 tests against kube-apiserver 1.37.0 |
+| Envtest integration tests | `go test ./internal/controller ./internal/app` (via `make test`) | 16 tests against kube-apiserver 1.37.0, one of them through a running manager |
 | Property tests | `go test ./internal/lifecycle` | 2 properties, 5,000 random starting states each |
 | Fuzzing | `make fuzz` | `FuzzNamespaceIsAlwaysValid`, `FuzzVerifyNeverPanics` (30s each) |
 | `lifecycle.Decide` | `make bench` | 38 ns/op, 1 alloc |
