@@ -62,14 +62,21 @@ var deletionRequested = predicate.Funcs{
 }
 
 // specOrDeletion filters PreviewEnvironment updates down to the ones that
-// change what the reconciler should do: a new spec (generation) or a
-// deletion request. Status-only and finalizer-only updates are dropped.
-// The reconciler writes status on every Failed attempt (failureCount); if
-// those writes re-triggered it, the event would be queued without the rate
+// can change what the reconciler should do: a new spec (generation), a
+// deletion request, or a label/annotation edit (which the reconciler never
+// makes itself, so operators can force a reconcile by touching an
+// annotation). Status-only and finalizer-only updates are dropped: the
+// reconciler writes status on every Failed attempt (failureCount), and if
+// those writes re-triggered it the event would be queued without the rate
 // limiter and the RequeueAfter backoff would never apply. Create, delete
 // and resync events always pass.
 func specOrDeletion() predicate.Predicate {
-	return predicate.Or(predicate.GenerationChangedPredicate{}, deletionRequested)
+	return predicate.Or(
+		predicate.GenerationChangedPredicate{},
+		deletionRequested,
+		predicate.AnnotationChangedPredicate{},
+		predicate.LabelChangedPredicate{},
+	)
 }
 
 // SetupWithManager registers the reconciler. It watches PreviewEnvironments,

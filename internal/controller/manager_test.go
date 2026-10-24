@@ -134,6 +134,8 @@ func TestSpecOrDeletionPredicate(t *testing.T) {
 		{"spec change", pe(1, false, ""), pe(2, false, ""), true},
 		{"deletion requested", pe(1, false, ""), pe(1, true, ""), true},
 		{"status while deleting", pe(1, true, v1alpha1.PhaseTearingDown), pe(1, true, v1alpha1.PhaseClosed), false},
+		{"finalizer added", pe(1, false, ""), withFinalizer(pe(1, false, "")), false},
+		{"annotation nudge", pe(1, false, ""), withAnnotation(pe(1, false, "")), true},
 	}
 	for _, c := range cases {
 		if got := p.Update(event.UpdateEvent{ObjectOld: c.old, ObjectNew: c.new}); got != c.want {
@@ -146,4 +148,14 @@ func TestSpecOrDeletionPredicate(t *testing.T) {
 	if deletionRequested.Update(event.UpdateEvent{}) {
 		t.Error("nil objects must not pass")
 	}
+}
+
+func withFinalizer(pe *v1alpha1.PreviewEnvironment) *v1alpha1.PreviewEnvironment {
+	pe.Finalizers = []string{v1alpha1.Finalizer}
+	return pe
+}
+
+func withAnnotation(pe *v1alpha1.PreviewEnvironment) *v1alpha1.PreviewEnvironment {
+	pe.Annotations = map[string]string{"example.com/reconcile-at": "now"}
+	return pe
 }
