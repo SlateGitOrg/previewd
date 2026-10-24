@@ -107,7 +107,12 @@ func Match(rules []Rule, repo v1alpha1.RepositoryRef) (string, bool) {
 
 // Sink writes PreviewEnvironments.
 type Sink struct {
+	// Client writes PreviewEnvironments.
 	Client client.Client
+	// Reader reads them; pass an uncached reader (the manager's API
+	// reader) so the stale-event check compares against the latest spec.
+	// Nil means Client.
+	Reader client.Reader
 	Rules  []Rule
 	Log    logr.Logger
 }
@@ -172,8 +177,12 @@ func (s *Sink) Apply(ctx context.Context, ev Event) (Result, error) {
 }
 
 func (s *Sink) upsert(ctx context.Context, instance, template string, ev Event) (Result, error) {
+	reader := s.Reader
+	if reader == nil {
+		reader = s.Client
+	}
 	var pe v1alpha1.PreviewEnvironment
-	err := s.Client.Get(ctx, types.NamespacedName{Name: instance}, &pe)
+	err := reader.Get(ctx, types.NamespacedName{Name: instance}, &pe)
 	switch {
 	case apierrors.IsNotFound(err):
 		if ev.State == v1alpha1.PRStateClosed {

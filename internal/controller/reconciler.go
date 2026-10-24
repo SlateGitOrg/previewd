@@ -78,8 +78,12 @@ type observed struct {
 // Reconcile implements reconcile.Reconciler.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 	logger := log.FromContext(ctx)
+	// Read the PreviewEnvironment uncached. A reconcile triggered by an
+	// owned-object event can otherwise run against a cached copy that does
+	// not yet include the status written by the previous reconcile, and
+	// would re-post an SCM status that was already sent.
 	var pe v1alpha1.PreviewEnvironment
-	if err := r.Client.Get(ctx, req.NamespacedName, &pe); err != nil {
+	if err := r.APIReader.Get(ctx, req.NamespacedName, &pe); err != nil {
 		if apierrors.IsNotFound(err) {
 			r.Phases.Forget(req.Name)
 			return reconcile.Result{}, nil
