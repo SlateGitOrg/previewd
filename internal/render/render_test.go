@@ -2,6 +2,7 @@ package render
 
 import (
 	"flag"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -446,3 +447,5 @@ func TestInputFrom(t *testing.T) {
 		t.Fatalf("%+v", in)
 	}
 }
+
+func osDirFS() fs.FS { return os.DirFS(filepath.Join("..", "..")) }

@@ -12,7 +12,7 @@ COVER_DIR   := coverage
 # Resolve envtest binaries: installed copy first (offline), download otherwise.
 ENVTEST_ASSETS = $$($(GO) tool setup-envtest use $(ENVTEST_K8S_VERSION) -i -p path 2>/dev/null || $(GO) tool setup-envtest use $(ENVTEST_K8S_VERSION) -p path)
 
-.PHONY: all check fmt fmt-check lint vet generate verify-generate test unit cover fuzz demo build envtest clean help
+.PHONY: all check fmt fmt-check lint vet generate verify-generate test unit cover fuzz demo bench bench-scale build envtest clean help
 
 all: check
 
@@ -65,6 +65,12 @@ fuzz: ## short fuzzing sessions for the parsers
 
 demo: ## offline end-to-end demo against a local API server
 	KUBEBUILDER_ASSETS="$(ENVTEST_ASSETS)" $(GO) run ./cmd/previewd-demo
+
+bench: ## Go microbenchmarks (render, decide, verify, parse)
+	$(GO) test -run '^$$' -bench . -benchmem -benchtime 2s ./internal/render ./internal/lifecycle ./internal/webhook
+
+bench-scale: ## open/close 50 PRs concurrently against envtest and report latencies
+	KUBEBUILDER_ASSETS="$(ENVTEST_ASSETS)" $(GO) run ./cmd/previewd-demo -scale 50
 
 build: ## build the previewd binary into bin/
 	$(GO) build -trimpath -o bin/previewd ./cmd/previewd

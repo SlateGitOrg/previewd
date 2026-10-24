@@ -72,8 +72,15 @@ func main() {
 	fixtures := flag.String("fixtures", filepath.Join("testdata", "webhooks"), "webhook fixture directory")
 	templates := flag.String("templates-dir", "templates", "template sets directory")
 	crds := flag.String("crd-dir", filepath.Join("config", "crd"), "CRD directory")
+	scale := flag.Int("scale", 0, "instead of the story, open N pull requests concurrently and report latencies")
 	flag.Parse()
-	if err := run(*fixtures, *templates, *crds); err != nil {
+	var err error
+	if *scale > 0 {
+		err = runScale(*scale, *fixtures, *templates, *crds)
+	} else {
+		err = run(*fixtures, *templates, *crds)
+	}
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "demo failed:", err)
 		os.Exit(1)
 	}
