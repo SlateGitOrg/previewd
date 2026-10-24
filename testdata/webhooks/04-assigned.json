@@ -1,0 +1,66 @@
+{
+  "action": "assigned",
+  "number": 42,
+  "pull_request": {
+    "url": "https://api.github.example.test/repos/acme/shop/pulls/42",
+    "id": 1042,
+    "number": 42,
+    "state": "open",
+    "locked": false,
+    "title": "Checkout v2: one-click flow",
+    "draft": false,
+    "merged": false,
+    "user": {
+      "login": "octocat",
+      "id": 583231,
+      "type": "User"
+    },
+    "body": "Adds the one-click checkout flow.",
+    "created_at": "2026-10-01T09:00:00Z",
+    "updated_at": "2026-10-01T09:25:00Z",
+    "labels": [
+      {
+        "id": 1,
+        "name": "preview",
+        "color": "0e8a16"
+      }
+    ],
+    "head": {
+      "label": "acme:feature/checkout-v2",
+      "ref": "feature/checkout-v2",
+      "sha": "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+      "repo": {
+        "name": "shop",
+        "full_name": "acme/shop"
+      }
+    },
+    "base": {
+      "label": "acme:main",
+      "ref": "main",
+      "sha": "1111111111111111111111111111111111111111",
+      "repo": {
+        "name": "shop",
+        "full_name": "acme/shop"
+      }
+    }
+  },
+  "repository": {
+    "id": 1296269,
+    "node_id": "R_kgDOExample",
+    "name": "shop",
+    "full_name": "acme/shop",
+    "private": false,
+    "owner": {
+      "login": "acme",
+      "id": 1,
+      "type": "Organization"
+    },
+    "html_url": "https://github.example.test/acme/shop",
+    "default_branch": "main"
+  },
+  "sender": {
+    "login": "octocat",
+    "id": 583231,
+    "type": "User"
+  }
+}

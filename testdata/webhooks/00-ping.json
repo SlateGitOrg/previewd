@@ -1,0 +1,24 @@
+{
+  "zen": "Keep it logically awesome.",
+  "hook_id": 123,
+  "hook": {
+    "type": "Repository",
+    "events": [
+      "pull_request"
+    ]
+  },
+  "repository": {
+    "id": 1296269,
+    "node_id": "R_kgDOExample",
+    "name": "shop",
+    "full_name": "acme/shop",
+    "private": false,
+    "owner": {
+      "login": "acme",
+      "id": 1,
+      "type": "Organization"
+    },
+    "html_url": "https://github.example.test/acme/shop",
+    "default_branch": "main"
+  }
+}
