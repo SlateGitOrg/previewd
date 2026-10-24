@@ -130,7 +130,9 @@ func TestStartStopsOnCancel(t *testing.T) {
 		t.Fatal(err)
 	}
 	failing := fake.NewClientBuilder().WithScheme(scheme(t)).WithInterceptorFuncs(interceptor.Funcs{
-		List: func(context.Context, client.WithWatch, client.ObjectList, ...client.ListOption) error { return errors.New("x") },
+		List: func(context.Context, client.WithWatch, client.ObjectList, ...client.ListOption) error {
+			return errors.New("x")
+		},
 	}).Build()
 	col2 := &Collector{Client: failing, Clock: clocktesting.NewFakePassiveClock(now), Log: logr.Discard()}
 	ctx2, cancel2 := context.WithCancel(context.Background())
