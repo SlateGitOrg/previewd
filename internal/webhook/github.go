@@ -85,8 +85,17 @@ func ParsePullRequest(body []byte, deliveryID string, allowForks bool) (intake.E
 		owner, name, _ = strings.Cut(p.Repository.FullName, "/")
 	}
 	base := owner + "/" + name
-	if head := p.PullRequest.Head.Repo; head != nil && !strings.EqualFold(head.FullName, base) && !allowForks {
-		return intake.Event{}, errIrrelevant{reason: "pull request from fork " + head.FullName + " (forks disabled)"}
+	if !allowForks {
+		// Fail closed: GitHub sends head.repo = null when the fork behind
+		// a PR has been deleted, so a missing or nameless head repository
+		// cannot be shown to be the base repository and counts as a fork.
+		head := p.PullRequest.Head.Repo
+		switch {
+		case head == nil || head.FullName == "":
+			return intake.Event{}, errIrrelevant{reason: "pull request head repository is unknown (deleted fork?); forks disabled"}
+		case !strings.EqualFold(head.FullName, base):
+			return intake.Event{}, errIrrelevant{reason: "pull request from fork " + head.FullName + " (forks disabled)"}
+		}
 	}
 	number := p.PullRequest.Number
 	if number == 0 {

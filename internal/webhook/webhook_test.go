@@ -169,15 +169,42 @@ func TestParseEdgeCases(t *testing.T) {
 	}
 	// Repository given only by full_name; number only at top level.
 	body := `{"action":"opened","number":7,"pull_request":{"state":"open","updated_at":"2026-10-01T00:00:00Z",
-	  "head":{"sha":"4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c","ref":"x"},"base":{"ref":"main"}},
+	  "head":{"sha":"4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c","ref":"x","repo":{"full_name":"ACME/api"}},"base":{"ref":"main"}},
 	  "repository":{"full_name":"acme/api"}}`
 	ev, err := ParsePullRequest([]byte(body), "", false)
 	if err != nil || ev.Repo.Name != "api" || ev.PR.Number != 7 {
 		t.Fatalf("%+v %v", ev, err)
 	}
-	invalid := `{"action":"opened","pull_request":{"head":{"sha":"nothex"}},"repository":{"full_name":"a/b"}}`
+	invalid := `{"action":"opened","pull_request":{"head":{"sha":"nothex","repo":{"full_name":"a/b"}}},"repository":{"full_name":"a/b"}}`
 	if _, err := ParsePullRequest([]byte(invalid), "", false); err == nil || !strings.Contains(err.Error(), "invalid") {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// GitHub sends head.repo = null once the fork behind a PR is deleted. With
+// forks disabled that must not count as a same-repository PR (THREAT_MODEL
+// T9): the guard fails closed.
+func TestForkGuardFailsClosedOnUnknownHeadRepo(t *testing.T) {
+	const sha = "4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c"
+	payload := func(head string) []byte {
+		return []byte(`{"action":"opened","number":7,"pull_request":{"number":7,"state":"open","updated_at":"2026-10-01T00:00:00Z",
+		  "head":{"sha":"` + sha + `","ref":"x"` + head + `},"base":{"ref":"main"}},
+		  "repository":{"name":"shop","full_name":"acme/shop","owner":{"login":"acme"}}}`)
+	}
+	for name, head := range map[string]string{
+		"null repo":      `,"repo":null`,
+		"missing repo":   ``,
+		"empty fullname": `,"repo":{"full_name":""}`,
+	} {
+		if ev, err := ParsePullRequest(payload(head), "d", false); !IsIrrelevant(err) || !strings.Contains(err.Error(), "unknown") {
+			t.Errorf("%s, forks disabled: event %+v err %v; want ignored", name, ev, err)
+		}
+		if ev, err := ParsePullRequest(payload(head), "d", true); err != nil || ev.PR.Number != 7 {
+			t.Errorf("%s, forks allowed: event %+v err %v", name, ev, err)
+		}
+	}
+	if ev, err := ParsePullRequest(payload(`,"repo":{"full_name":"acme/shop"}`), "d", false); err != nil || ev.PR.Number != 7 {
+		t.Errorf("same-repo PR: %+v %v", ev, err)
 	}
 }
 
