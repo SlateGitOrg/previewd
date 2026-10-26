@@ -17,9 +17,9 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/intake"
-	"github.com/archit2501/previewd/internal/metrics"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/intake"
+	"github.com/SlateGitOrg/previewd/internal/metrics"
 )
 
 var secret = []byte("s3cr3t-for-tests")

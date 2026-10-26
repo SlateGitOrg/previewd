@@ -16,7 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
 )
 
 var now = time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)

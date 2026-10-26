@@ -13,8 +13,8 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/lifecycle"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/lifecycle"
 )
 
 const sha = "4f2a9c1e0b7d3a5f6c8e9d0a1b2c3d4e5f6a7b8c"

@@ -1,4 +1,4 @@
-module github.com/archit2501/previewd
+module github.com/SlateGitOrg/previewd
 
 go 1.26.0
 

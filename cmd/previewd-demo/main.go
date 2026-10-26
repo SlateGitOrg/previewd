@@ -43,11 +43,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/app"
-	"github.com/archit2501/previewd/internal/gc"
-	"github.com/archit2501/previewd/internal/intake"
-	"github.com/archit2501/previewd/internal/webhook"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/app"
+	"github.com/SlateGitOrg/previewd/internal/gc"
+	"github.com/SlateGitOrg/previewd/internal/intake"
+	"github.com/SlateGitOrg/previewd/internal/webhook"
 )
 
 const (

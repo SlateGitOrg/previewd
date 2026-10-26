@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/archit2501/previewd/internal/webhook"
+	"github.com/SlateGitOrg/previewd/internal/webhook"
 )
 
 func run(t *testing.T, stdin string, env map[string]string, args ...string) (int, string, string) {

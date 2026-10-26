@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
 )
 
 // ManagedSelector selects every object previewd created.

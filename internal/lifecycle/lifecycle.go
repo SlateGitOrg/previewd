@@ -14,7 +14,7 @@ package lifecycle
 import (
 	"time"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
 )
 
 // NamespaceState is the observed state of the preview namespace.

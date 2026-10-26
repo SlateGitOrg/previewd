@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/intake"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/intake"
 )
 
 // GitHub event and delivery headers.

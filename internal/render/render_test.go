@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
 )
 
 var update = flag.Bool("update", false, "rewrite golden files")

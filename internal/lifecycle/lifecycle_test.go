@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
 )
 
 var t0 = time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)

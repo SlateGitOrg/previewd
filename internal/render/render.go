@@ -17,8 +17,8 @@ import (
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/yaml"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/naming"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/naming"
 )
 
 // Bundle is the full desired state of one preview environment.

@@ -11,8 +11,11 @@ on TTL expiry, or when its record disappears.
 It is written in Go on controller-runtime, tested against a real
 kube-apiserver with envtest, and runs fully offline in a demo.
 
-> Portfolio project. It has never run against a production cluster or a
-> real GitHub organisation; see [Limitations](#limitations).
+[![CI](https://github.com/SlateGitOrg/previewd/actions/workflows/ci.yml/badge.svg)](https://github.com/SlateGitOrg/previewd/actions/workflows/ci.yml)
+
+> Status: tested against a real kube-apiserver (envtest) and a fake GitHub API,
+> not yet run on a production cluster or against github.com; see
+> [Limitations](#limitations).
 
 ## Who it is for
 
@@ -176,8 +179,7 @@ marked):
    previewd_webhook_requests_total{event="pull_request",outcome="unauthorized"} 1
 ```
 
-(A few repeated `phase ->` lines were also trimmed in steps 3–7; the full
-output is in the build report.)
+(A few repeated `phase ->` lines were also trimmed in steps 3–7.)
 
 ## Design decisions
 
@@ -210,13 +212,12 @@ that shape everything else:
 
 ## Tests, coverage and benchmarks
 
-Every number below comes from the command shown next to it, run on the build
-machine (Apple silicon, 8 cores, shared with other builds — expect variance).
+Every number below comes from the command shown next to it, run on a development machine (Apple silicon, 8 cores, shared with other builds — expect variance).
 
 | What | Command | Result |
 |---|---|---|
 | All gates | `make check` | pass: fmt, generate check, vet, golangci-lint (0 issues), 12 test packages, coverage floor |
-| Coverage, `./internal/...` | `make check` (then `make cover-report`) | **94.9%** of statements (1412/1491) in the fresh-clone run (fix round 1); ±0.1 between runs because a few paths are timing-dependent |
+| Coverage, `./internal/...` | `make check` (then `make cover-report`) | **94.9%** of statements (1412/1491) in a fresh-clone run; ±0.1 between runs because a few paths are timing-dependent |
 | Lowest packages | `make cover-report` | app 81.8%, cli 84.7%, controller 88.7% |
 | Envtest integration tests | `go test ./internal/controller ./internal/app` (via `make test`) | 16 tests against kube-apiserver 1.37.0, one of them through a running manager |
 | Property tests | `go test ./internal/lifecycle` | 2 properties, 5,000 random starting states each |
@@ -240,7 +241,7 @@ order-of-magnitude figures.
 
 ## Limitations
 
-* **Never run in production.** All Kubernetes testing is envtest (real
+* **Not run in production.** All Kubernetes testing is envtest (real
   apiserver + etcd, no controllers, no nodes). Readiness and namespace
   finalization were simulated; container start-up, image pulls, real network
   policy enforcement and PSA admission of real pods were not exercised.
@@ -263,7 +264,6 @@ order-of-magnitude figures.
   client write path before the first create (measured, not investigated
   further). Later deliveries take tens of milliseconds.
 * **The delivery-ID cache is per replica and in memory.**
-* **CI is written but has never run**: the repository has not been pushed.
 * **No container image or Dockerfile** is provided; the manifests in
   `config/` reference `previewd:dev` and were validated only by server-side
   dry-run against envtest (`TestDeployManifestsAreValid`).

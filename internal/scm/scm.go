@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/lifecycle"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/lifecycle"
 )
 
 // Status is one status update for a commit.

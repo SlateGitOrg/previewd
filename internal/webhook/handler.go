@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/archit2501/previewd/internal/intake"
-	"github.com/archit2501/previewd/internal/metrics"
+	"github.com/SlateGitOrg/previewd/internal/intake"
+	"github.com/SlateGitOrg/previewd/internal/metrics"
 )
 
 // DefaultMaxBodyBytes bounds request bodies. GitHub caps payloads at 25 MB,

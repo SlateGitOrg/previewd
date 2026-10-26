@@ -231,7 +231,7 @@ makes every side effect retryable by the reconciler.
 
 ## Complexity
 
-Timings are single runs on the build machine (Apple silicon, 8 cores, shared
+Timings are single runs on a development machine (Apple silicon, 8 cores, shared
 with other jobs); expect run-to-run variance of tens of percent.
 
 Let *k* be the number of objects in a bundle, *K* the number of kinds the

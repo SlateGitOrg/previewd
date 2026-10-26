@@ -6,8 +6,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/naming"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/naming"
 )
 
 // Input is what a render needs to know about one pull request.

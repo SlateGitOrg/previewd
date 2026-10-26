@@ -16,12 +16,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/yaml"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/app"
-	"github.com/archit2501/previewd/internal/config"
-	"github.com/archit2501/previewd/internal/naming"
-	"github.com/archit2501/previewd/internal/render"
-	"github.com/archit2501/previewd/internal/webhook"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/app"
+	"github.com/SlateGitOrg/previewd/internal/config"
+	"github.com/SlateGitOrg/previewd/internal/naming"
+	"github.com/SlateGitOrg/previewd/internal/render"
+	"github.com/SlateGitOrg/previewd/internal/webhook"
 )
 
 // Version is set at build time with -ldflags "-X .../cli.Version=...".

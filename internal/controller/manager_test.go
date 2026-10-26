@@ -13,10 +13,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/metrics"
-	"github.com/archit2501/previewd/internal/render"
-	"github.com/archit2501/previewd/internal/scm"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/metrics"
+	"github.com/SlateGitOrg/previewd/internal/render"
+	"github.com/SlateGitOrg/previewd/internal/scm"
 )
 
 // TestFailedPreviewsBackOffUnderManager runs the reconciler inside a real

@@ -28,10 +28,10 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/yaml"
 
-	"github.com/archit2501/previewd/api/v1alpha1"
-	"github.com/archit2501/previewd/internal/intake"
-	"github.com/archit2501/previewd/internal/scm"
-	"github.com/archit2501/previewd/internal/webhook"
+	"github.com/SlateGitOrg/previewd/api/v1alpha1"
+	"github.com/SlateGitOrg/previewd/internal/intake"
+	"github.com/SlateGitOrg/previewd/internal/scm"
+	"github.com/SlateGitOrg/previewd/internal/webhook"
 )
 
 var (

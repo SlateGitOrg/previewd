@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/archit2501/previewd/internal/lifecycle"
+	"github.com/SlateGitOrg/previewd/internal/lifecycle"
 )
 
 // DefaultGitHubAPI is the public GitHub REST endpoint. GitHub Enterprise

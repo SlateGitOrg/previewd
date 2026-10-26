@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/archit2501/previewd/internal/intake"
-	"github.com/archit2501/previewd/internal/scm"
-	"github.com/archit2501/previewd/internal/webhook"
+	"github.com/SlateGitOrg/previewd/internal/intake"
+	"github.com/SlateGitOrg/previewd/internal/scm"
+	"github.com/SlateGitOrg/previewd/internal/webhook"
 )
 
 // Environment variables read by previewd. Secrets come from the

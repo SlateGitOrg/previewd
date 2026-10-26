@@ -49,7 +49,7 @@ everything down on close, label removal or TTL expiry.
 | Drift / self-heal | Yes (automated sync with self-heal) | Re-applies on every bundle change and on each reconcile that finds a hash mismatch; does not detect out-of-band edits to unchanged bundles |
 | UI, multi-cluster, RBAC model | Yes | No UI; single cluster; Kubernetes RBAC only |
 | Moving parts | Argo CD + ApplicationSet controller (+ Notifications for statuses) | One binary, one CRD |
-| Maturity | Widely used CNCF project | Portfolio project; never run against a production cluster |
+| Maturity | Widely used CNCF project | Young project; not yet run against a production cluster |
 
 ## When to use which
 
